@@ -1,0 +1,412 @@
+{
+  "info": {
+    "_postman_id": "ea4-gastronomia-sena-3312744",
+    "name": "API REST Gastronomía - SENA CGDSS (EA4)",
+    "description": "Colección completa de pruebas para los endpoints de la API REST de Gastronomía (Ficha 3312744), incluyendo autenticación JWT, CRUDs, reglas de negocio RN01-RN06 y MongoDB.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_cajero",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_cocinero",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Autenticación",
+      "item": [
+        {
+          "name": "POST Login ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token_admin\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@gastronomia.sena.edu.co\",\n  \"password\": \"Admin123*\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "POST Login CAJERO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token_cajero\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"cajero@gastronomia.sena.edu.co\",\n  \"password\": \"Cajero123*\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "POST Login COCINERO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"token_cocinero\", jsonData.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"cocinero@gastronomia.sena.edu.co\",\n  \"password\": \"Cocinero123*\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"]}
+          }
+        },
+        {
+          "name": "GET Perfil Autenticado",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/auth/perfil", "host": ["{{base_url}}"], "path": ["auth", "perfil"]}
+          }
+        },
+        {
+          "name": "POST Registro Usuario (Solo ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_admin}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identificacion\": \"1075999888\",\n  \"nombres\": \"Mariana\",\n  \"apellidos\": \"Dussan\",\n  \"correo\": \"mariana.dussan@gastronomia.sena.edu.co\",\n  \"password\": \"Mariana2026*\",\n  \"rol\": \"CAJERO\",\n  \"estado\": \"ACTIVO\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/auth/registro", "host": ["{{base_url}}"], "path": ["auth", "registro"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Usuarios",
+      "item": [
+        {
+          "name": "GET Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/usuarios", "host": ["{{base_url}}"], "path": ["usuarios"]}
+          }
+        },
+        {
+          "name": "GET Usuario por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/usuarios/1", "host": ["{{base_url}}"], "path": ["usuarios", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Categorías",
+      "item": [
+        {
+          "name": "GET Listar Categorías",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/categorias", "host": ["{{base_url}}"], "path": ["categorias"]}
+          }
+        },
+        {
+          "name": "POST Crear Categoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_admin}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bebidas Especiales\",\n  \"descripcion\": \"Cocteles sin licor y granizados\",\n  \"estado\": \"ACTIVO\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/categorias", "host": ["{{base_url}}"], "path": ["categorias"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Productos",
+      "item": [
+        {
+          "name": "GET Listar Productos",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"]}
+          }
+        },
+        {
+          "name": "GET Productos por Categoría",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/productos/categoria/1", "host": ["{{base_url}}"], "path": ["productos", "categoria", "1"]}
+          }
+        },
+        {
+          "name": "GET Receta de Producto",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/productos/1/receta", "host": ["{{base_url}}"], "path": ["productos", "1", "receta"]}
+          }
+        },
+        {
+          "name": "GET Costo y Margen de Producto (RF06)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cocinero}}"}],
+            "url": {"raw": "{{base_url}}/productos/1/costo", "host": ["{{base_url}}"], "path": ["productos", "1", "costo"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Insumos",
+      "item": [
+        {
+          "name": "GET Listar Insumos",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cocinero}}"}],
+            "url": {"raw": "{{base_url}}/insumos", "host": ["{{base_url}}"], "path": ["insumos"]}
+          }
+        },
+        {
+          "name": "GET Insumos Stock Bajo (RF07)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cocinero}}"}],
+            "url": {"raw": "{{base_url}}/insumos/stock-bajo", "host": ["{{base_url}}"], "path": ["insumos", "stock-bajo"]}
+          }
+        },
+        {
+          "name": "GET Insumos Próximos a Vencer (RF07)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cocinero}}"}],
+            "url": {"raw": "{{base_url}}/insumos/por-vencer?dias=15", "host": ["{{base_url}}"], "path": ["insumos", "por-vencer"], "query": [{"key": "dias", "value": "15"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Compras",
+      "item": [
+        {
+          "name": "POST Registrar Compra (RN02)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_admin}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero_factura\": \"FAC-POSTMAN-01\",\n  \"id_proveedor\": 1,\n  \"detalles\": [\n    {\n      \"id_insumo\": 2,\n      \"cantidad\": 15.00,\n      \"costo_unitario\": 14500.00\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{base_url}}/compras", "host": ["{{base_url}}"], "path": ["compras"]}
+          }
+        },
+        {
+          "name": "GET Listar Compras",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/compras", "host": ["{{base_url}}"], "path": ["compras"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Clientes",
+      "item": [
+        {
+          "name": "GET Listar Clientes",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cajero}}"}],
+            "url": {"raw": "{{base_url}}/clientes", "host": ["{{base_url}}"], "path": ["clientes"]}
+          }
+        },
+        {
+          "name": "GET Pedidos de Cliente",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cajero}}"}],
+            "url": {"raw": "{{base_url}}/clientes/1/pedidos", "host": ["{{base_url}}"], "path": ["clientes", "1", "pedidos"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Pedidos",
+      "item": [
+        {
+          "name": "POST Crear Pedido (RN01)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_cajero}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_cliente\": 1,\n  \"tipo_pedido\": \"MESA\",\n  \"observaciones\": \"Pedido desde Postman\",\n  \"detalles\": [\n    {\"id_producto\": 1, \"cantidad\": 1},\n    {\"id_producto\": 3, \"cantidad\": 2}\n  ]\n}"
+            },
+            "url": {"raw": "{{base_url}}/pedidos", "host": ["{{base_url}}"], "path": ["pedidos"]}
+          }
+        },
+        {
+          "name": "PATCH Cambiar Estado a EN_PREPARACION",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_cocinero}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_PREPARACION\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/pedidos/7/estado", "host": ["{{base_url}}"], "path": ["pedidos", "7", "estado"]}
+          }
+        },
+        {
+          "name": "PATCH Cambiar Estado a ENTREGADO (RN03)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_cocinero}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADO\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/pedidos/7/estado", "host": ["{{base_url}}"], "path": ["pedidos", "7", "estado"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Reportes",
+      "item": [
+        {
+          "name": "GET Reporte Ventas por Fecha (RF11)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/reportes/ventas?desde=2026-10-01&hasta=2026-10-31", "host": ["{{base_url}}"], "path": ["reportes", "ventas"], "query": [{"key": "desde", "value": "2026-10-01"}, {"key": "hasta", "value": "2026-10-31"}]}
+          }
+        },
+        {
+          "name": "GET Ranking Productos Más Vendidos (RF11)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": {"raw": "{{base_url}}/reportes/productos-mas-vendidos?limite=5", "host": ["{{base_url}}"], "path": ["reportes", "productos-mas-vendidos"], "query": [{"key": "limite", "value": "5"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Calificaciones MongoDB",
+      "item": [
+        {
+          "name": "GET Listar Calificaciones",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cajero}}"}],
+            "url": {"raw": "{{base_url}}/calificaciones", "host": ["{{base_url}}"], "path": ["calificaciones"]}
+          }
+        },
+        {
+          "name": "GET Calificación y Promedio por Producto (RF12)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_cajero}}"}],
+            "url": {"raw": "{{base_url}}/calificaciones/producto/1", "host": ["{{base_url}}"], "path": ["calificaciones", "producto", "1"]}
+          }
+        },
+        {
+          "name": "POST Registrar Calificación Cliente (RF12)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token_cajero}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_pedido\": 7,\n  \"id_cliente\": 7,\n  \"fecha\": \"2026-10-18T19:00:00\",\n  \"calificacion_servicio\": 5,\n  \"comentario\": \"Excelente cazuela, muy buen sazón.\",\n  \"productos\": [\n    {\n      \"id_producto\": 8,\n      \"nombre\": \"Cazuela de Mariscos\",\n      \"calificacion\": 5\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{base_url}}/calificaciones", "host": ["{{base_url}}"], "path": ["calificaciones"]}
+          }
+        }
+      ]
+    }
+  ]
+}

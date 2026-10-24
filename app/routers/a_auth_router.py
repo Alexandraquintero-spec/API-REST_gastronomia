@@ -1,15 +1,15 @@
 from typing import Any, Dict
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_obtener_usuario_actual, a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import (
     A_LoginRequest,
     A_TokenResponse,
     A_UsuarioCreate,
     A_UsuarioResponse,
 )
-from app.services.a_services import A_AuthService, A_UsuarioService
+from app.controllers.a_controllers import a_autenticar_usuario, a_crear_usuario
 
 a_auth_router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -28,10 +28,9 @@ a_auth_router = APIRouter(prefix="/auth", tags=["Autenticación"])
 )
 def a_login(
     a_datos_login: A_LoginRequest,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> A_TokenResponse:
-    a_servicio = A_AuthService(a_db)
-    return a_servicio.a_autenticar_usuario(a_datos_login)
+    return a_autenticar_usuario(db=a_db, datos_login=a_datos_login)
 
 
 @a_auth_router.post(
@@ -50,10 +49,9 @@ def a_login(
 def a_registro(
     a_datos: A_UsuarioCreate,
     a_usuario_admin: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> A_UsuarioResponse:
-    a_servicio = A_UsuarioService(a_db)
-    return a_servicio.a_crear_usuario(a_datos)
+    return a_crear_usuario(db=a_db, datos=a_datos)
 
 
 @a_auth_router.get(

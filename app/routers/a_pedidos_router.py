@@ -1,14 +1,14 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import (
     A_PedidoCreate,
     A_PedidoEstadoUpdate,
     A_PedidoResponse,
 )
-from app.services.a_services import A_PedidoService
+from app.controllers import a_controllers
 
 a_pedidos_router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 
@@ -25,10 +25,9 @@ a_pedidos_router = APIRouter(prefix="/pedidos", tags=["Pedidos"])
 )
 def a_listar_pedidos(
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_PedidoResponse]:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_listar_pedidos()
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_listar_pedidos(a_db)
 
 
 @a_pedidos_router.get(
@@ -45,10 +44,9 @@ def a_listar_pedidos(
 def a_pedidos_por_estado(
     estado: str,
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO", "COCINERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_PedidoResponse]:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_listar_por_estado(estado)
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_pedidos_por_estado(a_db, estado)
 
 
 @a_pedidos_router.patch(
@@ -71,10 +69,9 @@ def a_cambiar_estado_pedido(
     id: int,
     a_datos: A_PedidoEstadoUpdate,
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "COCINERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_PedidoResponse:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_cambiar_estado(id, a_datos.estado)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_cambiar_estado_pedido(a_db, id, a_datos.estado)
 
 
 @a_pedidos_router.get(
@@ -91,10 +88,9 @@ def a_cambiar_estado_pedido(
 def a_obtener_pedido(
     id: int,
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_PedidoResponse:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_obtener_por_id(id)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_obtener_pedido(a_db, id)
 
 
 @a_pedidos_router.post(
@@ -115,11 +111,10 @@ def a_obtener_pedido(
 def a_crear_pedido(
     a_datos: A_PedidoCreate,
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_PedidoResponse:
-    a_servicio = A_PedidoService(a_db)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
     a_id_usuario = a_usuario.get("id_usuario", 1)
-    return a_servicio.a_crear_pedido(a_datos, a_id_usuario)
+    return a_controllers.a_crear_pedido(a_db, a_datos, a_id_usuario)
 
 
 @a_pedidos_router.put(
@@ -138,10 +133,9 @@ def a_actualizar_pedido(
     id: int,
     a_datos: Dict[str, Any],
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_PedidoResponse:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_actualizar_pedido(id, a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_actualizar_pedido(a_db, id, a_datos)
 
 
 @a_pedidos_router.delete(
@@ -159,7 +153,6 @@ def a_actualizar_pedido(
 def a_eliminar_pedido(
     id: int,
     a_usuario: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN", "CAJERO"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> Dict[str, str]:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_eliminar_pedido(id)
+    return a_controllers.a_eliminar_pedido(a_db, id)

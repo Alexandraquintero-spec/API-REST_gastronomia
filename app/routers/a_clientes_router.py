@@ -1,15 +1,15 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import (
     A_ClienteCreate,
     A_ClienteResponse,
     A_ClienteUpdate,
     A_PedidoResponse,
 )
-from app.services.a_services import A_ClienteService, A_PedidoService
+from app.controllers import a_controllers
 
 a_clientes_router = APIRouter(
     prefix="/clientes",
@@ -29,10 +29,9 @@ a_clientes_router = APIRouter(
     },
 )
 def a_listar_clientes(
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_ClienteResponse]:
-    a_servicio = A_ClienteService(a_db)
-    return a_servicio.a_listar_clientes()
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_listar_clientes(a_db)
 
 
 @a_clientes_router.get(
@@ -48,10 +47,9 @@ def a_listar_clientes(
 )
 def a_pedidos_de_cliente(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_PedidoResponse]:
-    a_servicio = A_PedidoService(a_db)
-    return a_servicio.a_listar_por_cliente(id)
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_pedidos_por_cliente(a_db, id)
 
 
 @a_clientes_router.get(
@@ -67,10 +65,9 @@ def a_pedidos_de_cliente(
 )
 def a_obtener_cliente(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ClienteResponse:
-    a_servicio = A_ClienteService(a_db)
-    return a_servicio.a_obtener_por_id(id)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_obtener_cliente(a_db, id)
 
 
 @a_clientes_router.post(
@@ -86,10 +83,9 @@ def a_obtener_cliente(
 )
 def a_crear_cliente(
     a_datos: A_ClienteCreate,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ClienteResponse:
-    a_servicio = A_ClienteService(a_db)
-    return a_servicio.a_crear_cliente(a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_crear_cliente(a_db, a_datos)
 
 
 @a_clientes_router.put(
@@ -107,10 +103,9 @@ def a_crear_cliente(
 def a_actualizar_cliente(
     id: int,
     a_datos: A_ClienteUpdate,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ClienteResponse:
-    a_servicio = A_ClienteService(a_db)
-    return a_servicio.a_actualizar_cliente(id, a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_actualizar_cliente(a_db, id, a_datos)
 
 
 @a_clientes_router.delete(
@@ -126,7 +121,6 @@ def a_actualizar_cliente(
 )
 def a_eliminar_cliente(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> Dict[str, str]:
-    a_servicio = A_ClienteService(a_db)
-    return a_servicio.a_eliminar_cliente(id)
+    return a_controllers.a_eliminar_cliente(a_db, id)

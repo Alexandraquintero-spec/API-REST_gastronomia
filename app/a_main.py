@@ -1,5 +1,8 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.database.a_connection import a_mongo_db
+from app.database.a_seeder import a_inicializar_base_datos
 from app.routers.a_auth_router import a_auth_router
 from app.routers.a_usuarios_router import a_usuarios_router
 from app.routers.a_categorias_router import a_categorias_router
@@ -13,6 +16,17 @@ from app.routers.a_pedidos_router import a_pedidos_router
 from app.routers.a_reportes_router import a_reportes_router
 from app.routers.a_calificaciones_router import a_calificaciones_router
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Inicializa la base de datos MongoDB con datos de prueba si es necesario."""
+    try:
+        a_inicializar_base_datos(a_mongo_db)
+    except Exception as a_error:
+        print(f"[Aviso] No se pudo inicializar la base de datos automáticamente: {a_error}")
+    yield
+
+
 # Punto de entrada principal FastAPI según instructivo EA4
 app = FastAPI(
     title="API REST Unidad Productiva de Gastronomía - SENA CGDSS",
@@ -25,6 +39,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # Configuración de CORS

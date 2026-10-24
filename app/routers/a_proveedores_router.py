@@ -1,15 +1,15 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import (
     A_CompraResponse,
     A_ProveedorCreate,
     A_ProveedorResponse,
     A_ProveedorUpdate,
 )
-from app.services.a_services import A_CompraService, A_ProveedorService
+from app.controllers import a_controllers
 
 a_proveedores_router = APIRouter(
     prefix="/proveedores",
@@ -29,10 +29,9 @@ a_proveedores_router = APIRouter(
     },
 )
 def a_listar_proveedores(
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_ProveedorResponse]:
-    a_servicio = A_ProveedorService(a_db)
-    return a_servicio.a_listar_proveedores()
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_listar_proveedores(a_db)
 
 
 @a_proveedores_router.get(
@@ -48,10 +47,9 @@ def a_listar_proveedores(
 )
 def a_compras_de_proveedor(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_CompraResponse]:
-    a_servicio = A_CompraService(a_db)
-    return a_servicio.a_listar_por_proveedor(id)
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_compras_por_proveedor(a_db, id)
 
 
 @a_proveedores_router.get(
@@ -67,10 +65,9 @@ def a_compras_de_proveedor(
 )
 def a_obtener_proveedor(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ProveedorResponse:
-    a_servicio = A_ProveedorService(a_db)
-    return a_servicio.a_obtener_por_id(id)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_obtener_proveedor(a_db, id)
 
 
 @a_proveedores_router.post(
@@ -86,10 +83,9 @@ def a_obtener_proveedor(
 )
 def a_crear_proveedor(
     a_datos: A_ProveedorCreate,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ProveedorResponse:
-    a_servicio = A_ProveedorService(a_db)
-    return a_servicio.a_crear_proveedor(a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_crear_proveedor(a_db, a_datos)
 
 
 @a_proveedores_router.put(
@@ -107,10 +103,9 @@ def a_crear_proveedor(
 def a_actualizar_proveedor(
     id: int,
     a_datos: A_ProveedorUpdate,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_ProveedorResponse:
-    a_servicio = A_ProveedorService(a_db)
-    return a_servicio.a_actualizar_proveedor(id, a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_actualizar_proveedor(a_db, id, a_datos)
 
 
 @a_proveedores_router.delete(
@@ -126,7 +121,6 @@ def a_actualizar_proveedor(
 )
 def a_eliminar_proveedor(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> Dict[str, str]:
-    a_servicio = A_ProveedorService(a_db)
-    return a_servicio.a_eliminar_proveedor(id)
+    return a_controllers.a_eliminar_proveedor(a_db, id)

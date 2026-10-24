@@ -1,10 +1,10 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import A_CompraCreate, A_CompraResponse
-from app.services.a_services import A_CompraService
+from app.controllers import a_controllers
 
 a_compras_router = APIRouter(
     prefix="/compras",
@@ -24,10 +24,9 @@ a_compras_router = APIRouter(
     },
 )
 def a_listar_compras(
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> List[A_CompraResponse]:
-    a_servicio = A_CompraService(a_db)
-    return a_servicio.a_listar_compras()
+    a_db: Database = Depends(a_get_db),
+) -> List[Dict[str, Any]]:
+    return a_controllers.a_listar_compras(a_db)
 
 
 @a_compras_router.get(
@@ -43,10 +42,9 @@ def a_listar_compras(
 )
 def a_obtener_compra(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_CompraResponse:
-    a_servicio = A_CompraService(a_db)
-    return a_servicio.a_obtener_por_id(id)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_obtener_compra(a_db, id)
 
 
 @a_compras_router.post(
@@ -63,11 +61,10 @@ def a_obtener_compra(
 def a_crear_compra(
     a_datos: A_CompraCreate,
     a_usuario_admin: Dict[str, Any] = Depends(a_requerir_roles(["ADMIN"])),
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_CompraResponse:
-    a_servicio = A_CompraService(a_db)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
     a_id_usuario = a_usuario_admin.get("id_usuario", 1)
-    return a_servicio.a_crear_compra(a_datos, a_id_usuario)
+    return a_controllers.a_crear_compra(a_db, a_datos, a_id_usuario)
 
 
 @a_compras_router.put(
@@ -84,10 +81,9 @@ def a_crear_compra(
 def a_actualizar_compra(
     id: int,
     a_datos: Dict[str, Any],
-    a_db: Session = Depends(a_obtener_db_mysql),
-) -> A_CompraResponse:
-    a_servicio = A_CompraService(a_db)
-    return a_servicio.a_actualizar_compra(id, a_datos)
+    a_db: Database = Depends(a_get_db),
+) -> Dict[str, Any]:
+    return a_controllers.a_actualizar_compra(a_db, id, a_datos)
 
 
 @a_compras_router.delete(
@@ -103,7 +99,6 @@ def a_actualizar_compra(
 )
 def a_eliminar_compra(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> Dict[str, str]:
-    a_servicio = A_CompraService(a_db)
-    return a_servicio.a_eliminar_compra(id)
+    return a_controllers.a_eliminar_compra(a_db, id)

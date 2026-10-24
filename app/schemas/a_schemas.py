@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from decimal import Decimal
 from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -83,10 +82,10 @@ class A_CategoriaResponse(A_CategoriaBase):
 class A_InsumoBase(BaseModel):
     nombre: str = Field(..., max_length=100, description="Nombre único del insumo")
     unidad_medida: Literal["g", "kg", "ml", "l", "lb", "unidad"] = Field(..., description="Unidad de medida")
-    stock_actual: Decimal = Field(default=Decimal("0.00"), ge=0, description="Existencias actuales")
-    stock_minimo: Decimal = Field(default=Decimal("0.00"), ge=0, description="Nivel mínimo de alerta")
-    costo_unitario: Decimal = Field(default=Decimal("0.00"), ge=0, description="Costo unitario actual")
-    fecha_vencimiento: Optional[date] = Field(None, description="Fecha de vencimiento del lote")
+    stock_actual: float = Field(default=0.0, ge=0, description="Existencias actuales")
+    stock_minimo: float = Field(default=0.0, ge=0, description="Nivel mínimo de alerta")
+    costo_unitario: float = Field(default=0.0, ge=0, description="Costo unitario actual")
+    fecha_vencimiento: Optional[str] = Field(None, description="Fecha de vencimiento del lote (YYYY-MM-DD)")
     estado: Literal["ACTIVO", "INACTIVO"] = Field("ACTIVO", description="Estado")
 
 
@@ -97,10 +96,10 @@ class A_InsumoCreate(A_InsumoBase):
 class A_InsumoUpdate(BaseModel):
     nombre: Optional[str] = Field(None, max_length=100)
     unidad_medida: Optional[Literal["g", "kg", "ml", "l", "lb", "unidad"]] = None
-    stock_actual: Optional[Decimal] = Field(None, ge=0)
-    stock_minimo: Optional[Decimal] = Field(None, ge=0)
-    costo_unitario: Optional[Decimal] = Field(None, ge=0)
-    fecha_vencimiento: Optional[date] = None
+    stock_actual: Optional[float] = Field(None, ge=0)
+    stock_minimo: Optional[float] = Field(None, ge=0)
+    costo_unitario: Optional[float] = Field(None, ge=0)
+    fecha_vencimiento: Optional[str] = None
     estado: Optional[Literal["ACTIVO", "INACTIVO"]] = None
 
 
@@ -115,7 +114,7 @@ class A_InsumoResponse(A_InsumoBase):
 class A_RecetaBase(BaseModel):
     id_producto: int = Field(..., description="ID del producto")
     id_insumo: int = Field(..., description="ID del insumo")
-    cantidad: Decimal = Field(..., gt=0, description="Cantidad del insumo requerida")
+    cantidad: float = Field(..., gt=0, description="Cantidad del insumo requerida")
 
 
 class A_RecetaCreate(A_RecetaBase):
@@ -125,14 +124,14 @@ class A_RecetaCreate(A_RecetaBase):
 class A_RecetaUpdate(BaseModel):
     id_producto: Optional[int] = None
     id_insumo: Optional[int] = None
-    cantidad: Optional[Decimal] = Field(None, gt=0)
+    cantidad: Optional[float] = Field(None, gt=0)
 
 
 class A_RecetaResponse(A_RecetaBase):
     id_receta: int
     nombre_insumo: Optional[str] = None
     unidad_medida: Optional[str] = None
-    costo_unitario: Optional[Decimal] = None
+    costo_unitario: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -143,7 +142,7 @@ class A_ProductoBase(BaseModel):
     codigo: str = Field(..., max_length=20, description="Código interno de producto")
     nombre: str = Field(..., max_length=100, description="Nombre del producto")
     descripcion: Optional[str] = Field(None, description="Descripción del producto")
-    precio_venta: Decimal = Field(..., gt=0, description="Precio de venta (> 0)")
+    precio_venta: float = Field(..., gt=0, description="Precio de venta (> 0)")
     unidad_venta: str = Field(..., max_length=20, description="Unidad de venta (Porción, vaso, etc.)")
     id_categoria: int = Field(..., description="ID de la categoría a la que pertenece")
     estado: Literal["DISPONIBLE", "AGOTADO", "INACTIVO"] = Field("DISPONIBLE", description="Estado")
@@ -157,7 +156,7 @@ class A_ProductoUpdate(BaseModel):
     codigo: Optional[str] = Field(None, max_length=20)
     nombre: Optional[str] = Field(None, max_length=100)
     descripcion: Optional[str] = None
-    precio_venta: Optional[Decimal] = Field(None, gt=0)
+    precio_venta: Optional[float] = Field(None, gt=0)
     unidad_venta: Optional[str] = Field(None, max_length=20)
     id_categoria: Optional[int] = None
     estado: Optional[Literal["DISPONIBLE", "AGOTADO", "INACTIVO"]] = None
@@ -174,10 +173,10 @@ class A_ProductoCostoResponse(BaseModel):
     id_producto: int
     codigo: str
     nombre: str
-    precio_venta: Decimal
-    costo_produccion: Decimal
-    margen_ganancia: Decimal
-    porcentaje_margen: Decimal
+    precio_venta: float
+    costo_produccion: float
+    margen_ganancia: float
+    porcentaje_margen: float
     receta: List[A_RecetaResponse]
 
 
@@ -250,8 +249,8 @@ class A_ClienteResponse(A_ClienteBase):
 # ============================================================
 class A_DetalleCompraItemCreate(BaseModel):
     id_insumo: int = Field(..., description="ID del insumo adquirido")
-    cantidad: Decimal = Field(..., gt=0, description="Cantidad adquirida")
-    costo_unitario: Decimal = Field(..., ge=0, description="Nuevo costo unitario")
+    cantidad: float = Field(..., gt=0, description="Cantidad adquirida")
+    costo_unitario: float = Field(..., ge=0, description="Nuevo costo unitario")
 
 
 class A_CompraCreate(BaseModel):
@@ -261,22 +260,22 @@ class A_CompraCreate(BaseModel):
 
 
 class A_DetalleCompraResponse(BaseModel):
-    id_detalle_compra: int
+    id_detalle_compra: Optional[int] = None
     id_insumo: int
     nombre_insumo: Optional[str] = None
-    cantidad: Decimal
-    costo_unitario: Decimal
-    subtotal: Decimal
+    cantidad: float
+    costo_unitario: float
+    subtotal: float
     model_config = ConfigDict(from_attributes=True)
 
 
 class A_CompraResponse(BaseModel):
     id_compra: int
     numero_factura: str
-    fecha_compra: datetime
+    fecha_compra: str
     id_proveedor: int
     id_usuario: int
-    total: Decimal
+    total: float
     detalles: List[A_DetalleCompraResponse] = []
     model_config = ConfigDict(from_attributes=True)
 
@@ -303,23 +302,23 @@ class A_PedidoEstadoUpdate(BaseModel):
 
 
 class A_DetallePedidoResponse(BaseModel):
-    id_detalle: int
+    id_detalle: Optional[int] = None
     id_producto: int
     nombre_producto: Optional[str] = None
     cantidad: int
-    precio_unitario: Decimal
-    subtotal: Decimal
+    precio_unitario: float
+    subtotal: float
     model_config = ConfigDict(from_attributes=True)
 
 
 class A_PedidoResponse(BaseModel):
     id_pedido: int
-    fecha_pedido: datetime
+    fecha_pedido: str
     id_cliente: int
     id_usuario: int
     tipo_pedido: str
     estado: str
-    total: Decimal
+    total: float
     observaciones: Optional[str] = None
     detalles: List[A_DetallePedidoResponse] = []
     model_config = ConfigDict(from_attributes=True)
@@ -329,7 +328,7 @@ class A_PedidoResponse(BaseModel):
 # 11. Esquemas de Reportes
 # ============================================================
 class A_ReporteVentasResponse(BaseModel):
-    total_ventas: Decimal
+    total_ventas: float
     numero_pedidos: int
     desde: Optional[str] = None
     hasta: Optional[str] = None
@@ -339,7 +338,7 @@ class A_ProductoMasVendidoItem(BaseModel):
     id_producto: int
     nombre: str
     cantidad_vendida: int
-    total_recaudado: Decimal
+    total_recaudado: float
 
 
 # ============================================================

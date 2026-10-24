@@ -1,10 +1,18 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 from app.core.a_security import a_requerir_roles
-from app.database.a_conexion_mysql import a_obtener_db_mysql
+from app.database.a_connection import a_get_db
 from app.schemas.a_schemas import A_InsumoCreate, A_InsumoResponse, A_InsumoUpdate
-from app.services.a_services import A_InsumoService
+from app.controllers.a_controllers import (
+    a_actualizar_insumo,
+    a_crear_insumo,
+    a_eliminar_insumo,
+    a_insumos_por_vencer,
+    a_insumos_stock_bajo,
+    a_listar_insumos,
+    a_obtener_insumo,
+)
 
 a_insumos_router = APIRouter(
     prefix="/insumos",
@@ -19,16 +27,11 @@ a_insumos_router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="Listar insumos",
     description="Retorna el listado completo de insumos e ingredientes del inventario (ADMIN, COCINERO).",
-    responses={
-        200: {"description": "Lista de insumos"},
-        403: {"description": "Rol no autorizado"},
-    },
 )
-def a_listar_insumos(
-    a_db: Session = Depends(a_obtener_db_mysql),
+def a_listar_insumos_route(
+    a_db: Database = Depends(a_get_db),
 ) -> List[A_InsumoResponse]:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_listar_insumos()
+    return a_listar_insumos(db=a_db)
 
 
 @a_insumos_router.get(
@@ -37,15 +40,11 @@ def a_listar_insumos(
     status_code=status.HTTP_200_OK,
     summary="Consultar insumos con stock bajo",
     description="Filtra insumos cuyo stock_actual sea menor o igual al stock_minimo (RF07).",
-    responses={
-        200: {"description": "Lista de insumos con alerta de existencias"},
-    },
 )
-def a_insumos_stock_bajo(
-    a_db: Session = Depends(a_obtener_db_mysql),
+def a_insumos_stock_bajo_route(
+    a_db: Database = Depends(a_get_db),
 ) -> List[A_InsumoResponse]:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_listar_stock_bajo()
+    return a_insumos_stock_bajo(db=a_db)
 
 
 @a_insumos_router.get(
@@ -54,16 +53,12 @@ def a_insumos_stock_bajo(
     status_code=status.HTTP_200_OK,
     summary="Consultar insumos próximos a vencer",
     description="Retorna los insumos que vencen en los próximos N días (por defecto 7 días) (RF07).",
-    responses={
-        200: {"description": "Lista de insumos próximos a vencer"},
-    },
 )
-def a_insumos_por_vencer(
+def a_insumos_por_vencer_route(
     dias: int = Query(7, ge=1, description="Número de días hacia adelante para verificar vencimiento"),
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> List[A_InsumoResponse]:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_listar_por_vencer(dias)
+    return a_insumos_por_vencer(db=a_db, dias=dias)
 
 
 @a_insumos_router.get(
@@ -72,17 +67,12 @@ def a_insumos_por_vencer(
     status_code=status.HTTP_200_OK,
     summary="Obtener insumo por ID",
     description="Retorna la información detallada de un insumo específico por su ID.",
-    responses={
-        200: {"description": "Insumo encontrado"},
-        404: {"description": "Insumo no encontrado"},
-    },
 )
-def a_obtener_insumo(
+def a_obtener_insumo_route(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> A_InsumoResponse:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_obtener_por_id(id)
+    return a_obtener_insumo(db=a_db, id_insumo=id)
 
 
 @a_insumos_router.post(
@@ -91,17 +81,12 @@ def a_obtener_insumo(
     status_code=status.HTTP_201_CREATED,
     summary="Crear insumo",
     description="Registra un nuevo insumo en el inventario con su stock y unidad de medida.",
-    responses={
-        201: {"description": "Insumo creado"},
-        409: {"description": "Nombre de insumo ya existe"},
-    },
 )
-def a_crear_insumo(
+def a_crear_insumo_route(
     a_datos: A_InsumoCreate,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> A_InsumoResponse:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_crear_insumo(a_datos)
+    return a_crear_insumo(db=a_db, datos=a_datos)
 
 
 @a_insumos_router.put(
@@ -110,19 +95,13 @@ def a_crear_insumo(
     status_code=status.HTTP_200_OK,
     summary="Actualizar insumo",
     description="Actualiza la información de un insumo existente.",
-    responses={
-        200: {"description": "Insumo actualizado"},
-        404: {"description": "Insumo no encontrado"},
-        409: {"description": "Nombre duplicado"},
-    },
 )
-def a_actualizar_insumo(
+def a_actualizar_insumo_route(
     id: int,
     a_datos: A_InsumoUpdate,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> A_InsumoResponse:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_actualizar_insumo(id, a_datos)
+    return a_actualizar_insumo(db=a_db, id_insumo=id, datos=a_datos)
 
 
 @a_insumos_router.delete(
@@ -131,14 +110,9 @@ def a_actualizar_insumo(
     status_code=status.HTTP_200_OK,
     summary="Eliminar insumo",
     description="Elimina un insumo. Si tiene recetas o compras asociadas, se cambia a estado INACTIVO según la RN04.",
-    responses={
-        200: {"description": "Insumo eliminado o inactivado según movimientos"},
-        404: {"description": "Insumo no encontrado"},
-    },
 )
-def a_eliminar_insumo(
+def a_eliminar_insumo_route(
     id: int,
-    a_db: Session = Depends(a_obtener_db_mysql),
+    a_db: Database = Depends(a_get_db),
 ) -> Dict[str, str]:
-    a_servicio = A_InsumoService(a_db)
-    return a_servicio.a_eliminar_insumo(id)
+    return a_eliminar_insumo(db=a_db, id_insumo=id)

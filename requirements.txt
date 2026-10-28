@@ -1,8 +1,5 @@
 fastapi
 uvicorn
-sqlalchemy
-pymysql
-cryptography
 pymongo
 pydantic[email]
 PyJWT
